@@ -7,6 +7,11 @@
     box-sizing: border-box;
 }
 
+/* Force our own color scheme - prevent browser dark mode interference */
+:root {
+    color-scheme: dark;
+}
+
 /* ===== THREE.JS CANVAS ===== */
 #three-canvas {
     position: fixed;
@@ -773,11 +778,11 @@ section {
 
 .skill-tag {
     padding: 8px 14px;
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.4);
     border-radius: 50px;
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: #e0e0f0;
     transition: all var(--transition-fast);
 }
 
