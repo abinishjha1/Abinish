@@ -392,7 +392,7 @@ img {
     font-size: 4rem;
     font-weight: 800;
     line-height: 1.1;
-    background: linear-gradient(135deg, #fff 0%, #a0a0b0 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -635,7 +635,7 @@ section {
 .section-title {
     font-size: 2.75rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #fff 0%, #a0a0b0 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
