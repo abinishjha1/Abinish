@@ -48,9 +48,9 @@ window.addEventListener('scroll', () => {
 
     // Add/remove background opacity based on scroll
     if (currentScroll > 50) {
-        navbar.style.background = 'rgba(10, 10, 15, 0.95)';
+        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
     } else {
-        navbar.style.background = 'rgba(10, 10, 15, 0.8)';
+        navbar.style.background = 'rgba(255, 255, 255, 0.9)';
     }
 
     lastScroll = currentScroll;
