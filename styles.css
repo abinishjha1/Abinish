@@ -1497,13 +1497,32 @@ section {
         justify-content: center;
     }
 
+    /* Compact 2x2 grid for mobile stat cards */
     .about-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
     }
 
     .stat-card {
         flex-direction: column;
         text-align: center;
+        padding: 12px 8px;
+        gap: 8px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
     }
 
     .timeline-highlights {
