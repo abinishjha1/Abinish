@@ -6,10 +6,12 @@ import Projects from '@/components/Projects';
 import Experience from '@/components/Experience';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+import SiaAgent from '@/components/SiaAgent';
 
 export default function Home() {
   return (
     <>
+      <SiaAgent />
       <Navbar />
       <main>
         <Hero />

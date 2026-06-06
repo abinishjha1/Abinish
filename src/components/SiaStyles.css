@@ -1,0 +1,699 @@
+/* ===== SIA AI VOICE AGENT STYLES ===== */
+
+/* Overlay */
+.sia-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sia-overlay.sia-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Backdrop */
+.sia-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 10, 20, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Container */
+.sia-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  animation: siaSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes siaSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== INVITE STATE ===== */
+.sia-invite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.sia-name {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 24px;
+  letter-spacing: -0.02em;
+}
+
+.sia-tagline {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+/* Main Orb */
+.sia-orb {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sia-orb-inner {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+  box-shadow:
+    0 0 40px rgba(99, 102, 241, 0.5),
+    0 0 80px rgba(139, 92, 246, 0.3),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.2);
+  animation: orbPulse 3s ease-in-out infinite;
+}
+
+.sia-orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  animation: ringExpand 3s ease-in-out infinite;
+}
+
+.sia-orb-ring-2 {
+  animation-delay: -1.5s;
+}
+
+@keyframes orbPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 40px rgba(99, 102, 241, 0.5),
+      0 0 80px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 60px rgba(99, 102, 241, 0.6),
+      0 0 120px rgba(139, 92, 246, 0.4);
+  }
+}
+
+@keyframes ringExpand {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Start Button */
+.sia-start-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+  padding: 16px 36px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 4px 20px rgba(99, 102, 241, 0.4),
+    0 0 0 0 rgba(99, 102, 241, 0);
+  font-family: inherit;
+}
+
+.sia-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 30px rgba(99, 102, 241, 0.5),
+    0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.sia-start-btn:active {
+  transform: translateY(0);
+}
+
+.sia-start-btn i {
+  font-size: 1.1rem;
+}
+
+/* Skip Button */
+.sia-skip-btn {
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.sia-skip-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ===== CONVERSATION STATE ===== */
+.sia-conversation {
+  background: rgba(15, 20, 35, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+/* Header */
+.sia-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sia-header-info h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.sia-status {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.sia-close-btn {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sia-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+/* Mini Orb in header */
+.sia-orb-mini {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sia-orb-mini .sia-orb-inner {
+  width: 36px;
+  height: 36px;
+  animation: none;
+}
+
+.sia-orb-mini-speaking .sia-orb-inner {
+  animation: orbSpeaking 0.6s ease-in-out infinite alternate;
+  box-shadow:
+    0 0 20px rgba(99, 102, 241, 0.6),
+    0 0 40px rgba(139, 92, 246, 0.4);
+}
+
+.sia-orb-mini-listening .sia-orb-inner {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
+  box-shadow:
+    0 0 20px rgba(16, 185, 129, 0.5),
+    0 0 40px rgba(52, 211, 153, 0.3);
+  animation: orbListening 1.5s ease-in-out infinite;
+}
+
+.sia-orb-mini-thinking .sia-orb-inner {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%);
+  box-shadow:
+    0 0 20px rgba(245, 158, 11, 0.5),
+    0 0 40px rgba(251, 191, 36, 0.3);
+  animation: orbPulse 1.2s ease-in-out infinite;
+}
+
+.sia-orb-mini-done .sia-orb-inner {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes orbSpeaking {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes orbListening {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Sound waves (speaking) */
+.sia-sound-waves {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+
+.sia-sound-waves span {
+  width: 3px;
+  background: rgba(99, 102, 241, 0.8);
+  border-radius: 2px;
+  animation: soundWave 0.8s ease-in-out infinite alternate;
+}
+
+.sia-sound-waves span:nth-child(1) { height: 6px; animation-delay: 0s; }
+.sia-sound-waves span:nth-child(2) { height: 12px; animation-delay: 0.1s; }
+.sia-sound-waves span:nth-child(3) { height: 16px; animation-delay: 0.2s; }
+.sia-sound-waves span:nth-child(4) { height: 10px; animation-delay: 0.3s; }
+.sia-sound-waves span:nth-child(5) { height: 8px; animation-delay: 0.4s; }
+
+@keyframes soundWave {
+  0% { height: 4px; }
+  100% { height: 16px; }
+}
+
+/* Listening indicator */
+.sia-listening-indicator {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.sia-listening-indicator span {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: listenPulse 1.2s ease-in-out infinite;
+}
+
+.sia-listening-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.sia-listening-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes listenPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+/* Thinking dots */
+.sia-thinking-dots {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.sia-thinking-dots span {
+  width: 5px;
+  height: 5px;
+  background: #f59e0b;
+  border-radius: 50%;
+  animation: thinkBounce 1.4s ease-in-out infinite;
+}
+
+.sia-thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+.sia-thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes thinkBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* ===== MESSAGES ===== */
+.sia-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 200px;
+  max-height: 380px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.sia-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sia-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sia-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.sia-message {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  animation: msgAppear 0.4s ease forwards;
+}
+
+@keyframes msgAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sia-message-user {
+  flex-direction: row-reverse;
+}
+
+.sia-msg-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sia-msg-bubble {
+  padding: 12px 18px;
+  border-radius: 18px;
+  max-width: 85%;
+  line-height: 1.5;
+}
+
+.sia-message-assistant .sia-msg-bubble {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom-left-radius: 6px;
+}
+
+.sia-message-user .sia-msg-bubble {
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+.sia-msg-bubble p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Live transcript */
+.sia-message-live .sia-msg-bubble {
+  opacity: 0.7;
+  border: 1px dashed rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+/* Typing indicator in bubble */
+.sia-msg-typing {
+  display: flex;
+  gap: 5px;
+  padding: 16px 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom-left-radius: 6px;
+}
+
+.sia-msg-typing span {
+  width: 7px;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  animation: typingBubble 1.4s ease-in-out infinite;
+}
+
+.sia-msg-typing span:nth-child(2) { animation-delay: 0.2s; }
+.sia-msg-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBubble {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-8px); opacity: 1; }
+}
+
+/* ===== VOICE BAR ===== */
+.sia-voice-bar {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+}
+
+.sia-voice-visualizer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 28px;
+  flex: 1;
+  justify-content: center;
+}
+
+.sia-voice-visualizer span {
+  width: 3px;
+  background: linear-gradient(to top, #10b981, #34d399);
+  border-radius: 2px;
+  animation: voiceBar 0.6s ease-in-out infinite alternate;
+}
+
+.sia-voice-visualizer span:nth-child(1)  { animation-delay: 0s;    height: 8px;  }
+.sia-voice-visualizer span:nth-child(2)  { animation-delay: 0.08s; height: 16px; }
+.sia-voice-visualizer span:nth-child(3)  { animation-delay: 0.16s; height: 24px; }
+.sia-voice-visualizer span:nth-child(4)  { animation-delay: 0.24s; height: 12px; }
+.sia-voice-visualizer span:nth-child(5)  { animation-delay: 0.32s; height: 20px; }
+.sia-voice-visualizer span:nth-child(6)  { animation-delay: 0.4s;  height: 10px; }
+.sia-voice-visualizer span:nth-child(7)  { animation-delay: 0.48s; height: 28px; }
+.sia-voice-visualizer span:nth-child(8)  { animation-delay: 0.56s; height: 14px; }
+.sia-voice-visualizer span:nth-child(9)  { animation-delay: 0.64s; height: 18px; }
+.sia-voice-visualizer span:nth-child(10) { animation-delay: 0.72s; height: 6px;  }
+
+@keyframes voiceBar {
+  0% { height: 4px; }
+  100% { height: 28px; }
+}
+
+.sia-voice-hint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.sia-voice-hint i {
+  color: rgba(99, 102, 241, 0.6);
+}
+
+.sia-text-toggle {
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sia-text-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ===== TEXT INPUT ===== */
+.sia-text-input {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sia-text-input input {
+  flex: 1;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.sia-text-input input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.sia-text-input input:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.sia-text-input button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sia-text-input button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+/* ===== DONE BAR ===== */
+.sia-done-bar {
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+.sia-done-bar p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .sia-container {
+    max-width: calc(100% - 24px);
+    margin: 12px;
+  }
+
+  .sia-invite {
+    padding: 36px 24px;
+  }
+
+  .sia-orb {
+    width: 110px;
+    height: 110px;
+  }
+
+  .sia-orb-inner {
+    width: 64px;
+    height: 64px;
+  }
+
+  .sia-name {
+    font-size: 1.75rem;
+  }
+
+  .sia-tagline {
+    font-size: 1rem;
+  }
+
+  .sia-start-btn {
+    padding: 14px 28px;
+    font-size: 0.95rem;
+  }
+
+  .sia-messages {
+    max-height: 300px;
+    padding: 16px 18px;
+  }
+
+  .sia-msg-bubble {
+    max-width: 90%;
+    padding: 10px 14px;
+  }
+}
