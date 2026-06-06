@@ -18,13 +18,6 @@ interface ExtractedData {
   phase: string;
 }
 
-// Check for browser speech API support
-const isSpeechRecognitionSupported = () => {
-  if (typeof window === 'undefined') return false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
-};
-
 const isSpeechSynthesisSupported = () => {
   if (typeof window === 'undefined') return false;
   return !!window.speechSynthesis;
@@ -42,7 +35,7 @@ export default function SiaAgent() {
   const [textInput, setTextInput] = useState('');
   const [isChecking, setIsChecking] = useState(true);
 
-  // Use refs to avoid stale closure issues
+  // Refs to avoid stale closures
   const messagesRef = useRef<Message[]>([]);
   const extractedDataRef = useRef<ExtractedData>({
     name: null,
@@ -53,25 +46,35 @@ export default function SiaAgent() {
     message: null,
     phase: 'asking_name',
   });
-  const recognitionRef = useRef<ReturnType<typeof createRecognition> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasGreetedRef = useRef(false);
   const conversationDoneRef = useRef(false);
-  const showTextFallbackRef = useRef(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  // Keep refs in sync with state
+  // Keep refs in sync
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
-
-  useEffect(() => {
-    showTextFallbackRef.current = showTextFallback;
-  }, [showTextFallback]);
 
   // Scroll chat to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopRecording();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
 
   // Check if visitor has been here before
   useEffect(() => {
@@ -90,7 +93,7 @@ export default function SiaAgent() {
           return;
         }
       } catch {
-        // If API fails, continue showing Sia
+        // continue
       }
 
       setIsChecking(false);
@@ -100,23 +103,7 @@ export default function SiaAgent() {
     checkVisitor();
   }, []);
 
-  // Create speech recognition instance
-  function createRecognition() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SpeechRecognitionAPI =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) return null;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recognition = new SpeechRecognitionAPI() as any;
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-    return recognition;
-  }
-
-  // Speak text using Web Speech API
+  // ===== SPEECH SYNTHESIS (TTS) =====
   const speak = useCallback((text: string): Promise<void> => {
     return new Promise((resolve) => {
       if (!isSpeechSynthesisSupported()) {
@@ -125,13 +112,11 @@ export default function SiaAgent() {
       }
 
       window.speechSynthesis.cancel();
-
       const utterance = new SpeechSynthesisUtterance(text);
 
       const voices = window.speechSynthesis.getVoices();
       const preferredVoices = [
-        'Samantha',
-        'Karen',
+        'Samantha', 'Karen',
         'Google UK English Female',
         'Microsoft Zira',
         'Google US English',
@@ -147,97 +132,188 @@ export default function SiaAgent() {
         selectedVoice = voices.find(
           (v) =>
             v.name.toLowerCase().includes('female') ||
-            v.name.toLowerCase().includes('woman') ||
-            v.name.includes('Samantha')
+            v.name.toLowerCase().includes('woman')
         );
       }
 
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
+      if (selectedVoice) utterance.voice = selectedVoice;
 
       utterance.rate = 1.0;
       utterance.pitch = 1.1;
       utterance.volume = 1.0;
 
       utterance.onstart = () => setSiaState('speaking');
-      utterance.onend = () => {
-        setSiaState('idle');
-        resolve();
-      };
-      utterance.onerror = () => {
-        setSiaState('idle');
-        resolve();
-      };
+      utterance.onend = () => { setSiaState('idle'); resolve(); };
+      utterance.onerror = () => { setSiaState('idle'); resolve(); };
 
       window.speechSynthesis.speak(utterance);
     });
   }, []);
 
-  // Start listening for voice input
-  const startListening = useCallback(() => {
-    if (!isSpeechRecognitionSupported()) {
-      setShowTextFallback(true);
-      return;
-    }
-
-    const recognition = createRecognition();
-    if (!recognition) {
-      setShowTextFallback(true);
-      return;
-    }
-
-    recognitionRef.current = recognition;
-    setTranscript('');
-    setSiaState('listening');
-
-    let finalTranscript = '';
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
-      let interim = '';
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript;
-        } else {
-          interim += result[0].transcript;
-        }
-      }
-      setTranscript(finalTranscript + interim);
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onerror = (event: any) => {
-      console.log('Speech recognition error:', event.error);
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        setShowTextFallback(true);
-        setSiaState('idle');
-      }
-    };
-
-    recognition.onend = () => {
-      if (finalTranscript.trim()) {
-        handleUserMessage(finalTranscript.trim());
-      } else if (!showTextFallbackRef.current) {
-        setSiaState('idle');
-        setTimeout(() => startListening(), 500);
-      }
-    };
-
+  // ===== WHISPER-POWERED VOICE RECORDING =====
+  const startRecording = useCallback(async () => {
     try {
-      recognition.start();
-    } catch {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 16000,
+        },
+      });
+      streamRef.current = stream;
+
+      // Set up audio analysis for silence detection
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.85;
+      source.connect(analyser);
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+
+      // Start MediaRecorder
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm',
+      });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+
+        // Only transcribe if we have meaningful audio (> 1KB)
+        if (audioBlob.size > 1000) {
+          await transcribeAudio(audioBlob);
+        } else {
+          // Too short — restart listening
+          setSiaState('idle');
+          setTimeout(() => startRecording(), 300);
+        }
+      };
+
+      mediaRecorder.start(250); // Collect data every 250ms
+      setSiaState('listening');
+      setTranscript('');
+
+      // Start silence detection
+      detectSilence(analyser);
+    } catch (error) {
+      console.error('Microphone error:', error);
       setShowTextFallback(true);
       setSiaState('idle');
     }
   }, []);
 
-  // Send message to OpenAI and handle response — uses refs for fresh data
+  // Detect when user stops speaking
+  const detectSilence = (analyser: AnalyserNode) => {
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    let silenceStart: number | null = null;
+    let hasSpeechStarted = false;
+    const SILENCE_THRESHOLD = 15; // Volume level below which = silence
+    const SILENCE_DURATION = 2000; // 2 seconds of silence = done speaking
+    const MAX_RECORDING_TIME = 15000; // 15 seconds max
+    const recordingStart = Date.now();
+
+    const checkAudio = () => {
+      if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') return;
+
+      // Max recording time
+      if (Date.now() - recordingStart > MAX_RECORDING_TIME) {
+        stopRecording();
+        return;
+      }
+
+      analyser.getByteFrequencyData(dataArray);
+      const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+
+      if (average > SILENCE_THRESHOLD) {
+        // User is speaking
+        hasSpeechStarted = true;
+        silenceStart = null;
+        setTranscript('🎙️ Listening...');
+      } else if (hasSpeechStarted) {
+        // User was speaking but now silent
+        if (!silenceStart) {
+          silenceStart = Date.now();
+        } else if (Date.now() - silenceStart > SILENCE_DURATION) {
+          // Silence long enough — stop recording
+          stopRecording();
+          return;
+        }
+      }
+
+      silenceTimerRef.current = setTimeout(checkAudio, 100);
+    };
+
+    checkAudio();
+  };
+
+  // Stop recording
+  const stopRecording = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+
+    // Don't stop the stream tracks here — we might need them again
+  };
+
+  // Send audio to Whisper for transcription
+  const transcribeAudio = async (audioBlob: Blob) => {
+    setSiaState('thinking');
+    setTranscript('Transcribing...');
+
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+
+      const res = await fetch('/api/sia/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.text && data.text.trim()) {
+        setTranscript('');
+        handleUserMessage(data.text.trim());
+      } else {
+        // No speech detected
+        setTranscript('');
+        setSiaState('idle');
+        setTimeout(() => startRecording(), 500);
+      }
+    } catch (error) {
+      console.error('Transcription error:', error);
+      setTranscript('');
+      setSiaState('idle');
+      setTimeout(() => startRecording(), 500);
+    }
+  };
+
+  // ===== CHAT WITH OPENAI =====
   const handleUserMessage = async (userMessage: string) => {
     if (conversationDoneRef.current) return;
 
-    // Use ref for fresh messages (avoids stale closure)
     const currentMessages = messagesRef.current;
     const newMessages: Message[] = [
       ...currentMessages,
@@ -270,7 +346,7 @@ export default function SiaAgent() {
         setMessages(errMsgs);
         messagesRef.current = errMsgs;
         await speak(errorMsg.content);
-        startListening();
+        startRecording();
         return;
       }
 
@@ -282,7 +358,7 @@ export default function SiaAgent() {
       setMessages(updatedMessages);
       messagesRef.current = updatedMessages;
 
-      // Update extracted data — merge with previous (never lose data)
+      // Merge extracted data
       if (data.extractedData) {
         const prev = extractedDataRef.current;
         extractedDataRef.current = {
@@ -295,14 +371,18 @@ export default function SiaAgent() {
           phase: data.extractedData.phase || prev.phase,
         };
 
-        // If conversation is complete, send notification
         if (data.extractedData.phase === 'farewell') {
           conversationDoneRef.current = true;
           await speak(data.reply);
           setSiaState('done');
 
-          const finalData = extractedDataRef.current;
+          // Stop microphone
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach((t) => t.stop());
+            streamRef.current = null;
+          }
 
+          const finalData = extractedDataRef.current;
           try {
             await fetch('/api/sia/notify', {
               method: 'POST',
@@ -322,22 +402,17 @@ export default function SiaAgent() {
 
           try {
             await fetch('/api/sia/check-visitor', { method: 'POST' });
-          } catch {
-            // ignore
-          }
+          } catch { /* ignore */ }
           localStorage.setItem('sia_visited', 'true');
 
-          setTimeout(() => {
-            dismissSia();
-          }, 5000);
+          setTimeout(() => dismissSia(), 5000);
           return;
         }
       }
 
-      // Speak the reply, then listen again
       await speak(data.reply);
       if (!conversationDoneRef.current) {
-        startListening();
+        startRecording();
       }
     } catch (error) {
       console.error('Message error:', error);
@@ -345,7 +420,7 @@ export default function SiaAgent() {
     }
   };
 
-  // Activate Sia
+  // ===== ACTIVATION =====
   const activateSia = async () => {
     setIsActivated(true);
 
@@ -368,10 +443,7 @@ export default function SiaAgent() {
         const data = await res.json();
 
         if (data.reply) {
-          const greeting: Message = {
-            role: 'assistant',
-            content: data.reply,
-          };
+          const greeting: Message = { role: 'assistant', content: data.reply };
           setMessages([greeting]);
           messagesRef.current = [greeting];
 
@@ -380,39 +452,33 @@ export default function SiaAgent() {
           }
 
           await speak(data.reply);
-          startListening();
+          startRecording();
         }
       } catch (error) {
         console.error('Greeting error:', error);
         const fallback: Message = {
           role: 'assistant',
-          content:
-            "Hey there! Welcome to Abinish's portfolio! I'm Sia, his AI assistant. What's your name?",
+          content: "Hey there! Welcome to Abinish's portfolio! I'm Sia. What's your name?",
         };
         setMessages([fallback]);
         messagesRef.current = [fallback];
         await speak(fallback.content);
-        startListening();
+        startRecording();
       }
     }
   };
 
-  // Dismiss Sia overlay
+  // ===== DISMISS / SKIP =====
   const dismissSia = () => {
-    if (isSpeechSynthesisSupported()) {
-      window.speechSynthesis.cancel();
-    }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch {
-        // ignore
-      }
+    if (isSpeechSynthesisSupported()) window.speechSynthesis.cancel();
+    stopRecording();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
     }
     setIsVisible(false);
   };
 
-  // Handle text input submission
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (textInput.trim()) {
@@ -421,7 +487,6 @@ export default function SiaAgent() {
     }
   };
 
-  // Skip Sia entirely
   const skipSia = () => {
     localStorage.setItem('sia_visited', 'true');
     fetch('/api/sia/check-visitor', { method: 'POST' }).catch(() => {});
@@ -448,28 +513,19 @@ export default function SiaAgent() {
               <br />
               Got a moment to chat?
             </p>
-            <button
-              className="sia-start-btn"
-              onClick={activateSia}
-              id="sia-start-button"
-            >
+            <button className="sia-start-btn" onClick={activateSia} id="sia-start-button">
               <i className="fas fa-microphone" />
               <span>Start Conversation</span>
             </button>
-            <button
-              className="sia-skip-btn"
-              onClick={skipSia}
-              id="sia-skip-button"
-            >
+            <button className="sia-skip-btn" onClick={skipSia} id="sia-skip-button">
               Skip · Browse Portfolio
             </button>
           </div>
         ) : (
           <div className="sia-conversation">
+            {/* Header */}
             <div className="sia-header">
-              <div
-                className={`sia-orb-mini sia-orb-mini-${siaState}`}
-              >
+              <div className={`sia-orb-mini sia-orb-mini-${siaState}`}>
                 <div className="sia-orb-inner" />
                 {siaState === 'speaking' && (
                   <div className="sia-sound-waves">
@@ -492,40 +548,31 @@ export default function SiaAgent() {
                 <span className="sia-status">
                   {siaState === 'speaking' && '🔊 Speaking...'}
                   {siaState === 'listening' && '🎙️ Listening...'}
-                  {siaState === 'thinking' && '💭 Thinking...'}
+                  {siaState === 'thinking' && '💭 Processing...'}
                   {siaState === 'idle' && '✨ Ready'}
                   {siaState === 'done' && '✅ Done!'}
                 </span>
               </div>
-              <button
-                className="sia-close-btn"
-                onClick={skipSia}
-                aria-label="Close Sia"
-                id="sia-close-button"
-              >
+              <button className="sia-close-btn" onClick={skipSia} aria-label="Close Sia" id="sia-close-button">
                 <i className="fas fa-times" />
               </button>
             </div>
 
+            {/* Messages */}
             <div className="sia-messages">
               {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`sia-message sia-message-${msg.role}`}
-                >
-                  {msg.role === 'assistant' && (
-                    <div className="sia-msg-avatar">S</div>
-                  )}
+                <div key={i} className={`sia-message sia-message-${msg.role}`}>
+                  {msg.role === 'assistant' && <div className="sia-msg-avatar">S</div>}
                   <div className="sia-msg-bubble">
                     <p>{msg.content}</p>
                   </div>
                 </div>
               ))}
 
-              {siaState === 'listening' && transcript && (
+              {siaState === 'listening' && (
                 <div className="sia-message sia-message-user sia-message-live">
                   <div className="sia-msg-bubble sia-msg-live">
-                    <p>{transcript}</p>
+                    <p>{transcript || '🎙️ Speak now...'}</p>
                   </div>
                 </div>
               )}
@@ -542,6 +589,7 @@ export default function SiaAgent() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Text input fallback */}
             {showTextFallback && siaState !== 'done' && (
               <form className="sia-text-input" onSubmit={handleTextSubmit}>
                 <input
@@ -558,6 +606,7 @@ export default function SiaAgent() {
               </form>
             )}
 
+            {/* Voice bar */}
             {!showTextFallback && siaState !== 'done' && (
               <div className="sia-voice-bar">
                 {siaState === 'listening' && (
@@ -566,10 +615,10 @@ export default function SiaAgent() {
                     <span /><span /><span /><span /><span />
                   </div>
                 )}
-                {siaState === 'idle' && (
+                {(siaState === 'idle' || siaState === 'speaking') && (
                   <p className="sia-voice-hint">
-                    <i className="fas fa-microphone" /> Waiting for
-                    voice...
+                    <i className="fas fa-microphone" />
+                    {siaState === 'speaking' ? ' Sia is speaking...' : ' Waiting...'}
                   </p>
                 )}
                 <button
@@ -584,9 +633,7 @@ export default function SiaAgent() {
 
             {siaState === 'done' && (
               <div className="sia-done-bar">
-                <p>
-                  ✨ Conversation complete! Enjoy the portfolio.
-                </p>
+                <p>✨ Conversation complete! Enjoy the portfolio.</p>
               </div>
             )}
           </div>
