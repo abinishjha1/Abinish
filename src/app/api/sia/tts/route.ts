@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, voiceId = '21m00Tcm4TlvDq8ikWAM' } = await req.json(); // Default to Rachel
+    const { text, voiceId = 'A22yMycvuFasAOWuUGX7' } = await req.json(); // Custom Voice ID
 
     if (!text) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
