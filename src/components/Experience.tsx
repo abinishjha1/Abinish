@@ -32,7 +32,7 @@ export default function Experience() {
             </div>
             <div className="timeline-content">
               <h3>Independent Web & AI Developer</h3>
-              <span className="timeline-date">September 2024 - Present</span>
+              <span className="timeline-date">September 2024 - March 2026</span>
               <p>
                 Building custom web applications, AI-powered solutions, and EdTech platforms for clients worldwide.
                 Specializing in modern tech stacks and delivering end-to-end solutions.
