@@ -13,7 +13,7 @@ export default function Experience() {
             </div>
             <div className="timeline-content">
               <div className="timeline-badge">Current</div>
-              <h3>Freelance Web & AI Developer</h3>
+              <h3>Independent Web & AI Developer</h3>
               <span className="timeline-date">September 2024 - Present</span>
               <p>
                 Building custom web applications, AI-powered solutions, and EdTech platforms for clients worldwide.

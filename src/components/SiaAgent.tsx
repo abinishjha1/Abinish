@@ -418,7 +418,7 @@ export default function SiaAgent() {
       setSiaState('thinking');
 
       try {
-        const greetingMsg = "Hey there! I am Abinish's personal AI agent. What's your name?";
+        const greetingMsg = "Hey there! I am Abinish's personal AI agent. Are you visiting as a recruiter, or just an individual?";
         const greeting: Message = { role: 'assistant', content: greetingMsg };
         setMessages([greeting]);
         messagesRef.current = [greeting];

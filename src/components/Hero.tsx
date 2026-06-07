@@ -45,7 +45,7 @@ export default function Hero() {
         <div className="hero-content">
           <div className="hero-badge">
             <span className="badge-dot"></span>
-            Available for Freelance Work
+            Actively Seeking Full-Time Opportunities
           </div>
           <h1 className="hero-title">
             <span className="greeting">Hi, I'm</span>

@@ -6,8 +6,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Abinish Jha | Full Stack Web & AI Developer",
-  description: "Abinish Jha - Full Stack Web & AI Developer specializing in React, Next.js, AI/ML integration, and modern web applications. Available for freelance projects.",
-  keywords: ["web developer", "full stack developer", "React", "Next.js", "freelance", "AI", "LangChain", "Abinish", "Abinash", "Avinish", "Abinish Jha", "Abi", "Abhi", "Abi Jha", "Abhi Jha"],
+  description: "Abinish Jha - Full Stack Web & AI Developer specializing in React, Next.js, AI/ML integration, and modern web applications. Actively seeking full-time opportunities.",
+  keywords: ["web developer", "full stack developer", "React", "Next.js", "software engineer", "AI", "LangChain", "Abinish", "Abinash", "Avinish", "Abinish Jha", "Abi", "Abhi", "Abi Jha", "Abhi Jha"],
   authors: [{ name: "Abinish Jha" }],
   openGraph: {
     title: "Abinish Jha | Full Stack Web Developer",

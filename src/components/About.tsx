@@ -52,7 +52,6 @@ export default function About() {
             <StatCard icon="fas fa-briefcase" count={3} suffix="+" label="Years Experience" isVisible={isVisible} />
             <StatCard icon="fas fa-project-diagram" count={10} suffix="+" label="Projects Completed" isVisible={isVisible} />
             <StatCard icon="fas fa-certificate" count={3} suffix="" label="Certifications" isVisible={isVisible} />
-            <StatCard icon="fas fa-users" count={5000} suffix="+" label="Happy Users" isVisible={isVisible} />
           </div>
         </div>
       </div>
