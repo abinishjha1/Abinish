@@ -151,6 +151,7 @@ export default function SiaAgent() {
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
+          autoGainControl: true,
           sampleRate: 16000,
         },
       });
@@ -212,7 +213,7 @@ export default function SiaAgent() {
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     let silenceStart: number | null = null;
     let hasSpeechStarted = false;
-    const SILENCE_THRESHOLD = 15; // Volume level below which = silence
+    const SILENCE_THRESHOLD = 30; // Increased volume level below which = silence (better noise cancellation)
     const SILENCE_DURATION = 2000; // 2 seconds of silence = done speaking
     const MAX_RECORDING_TIME = 15000; // 15 seconds max
     const recordingStart = Date.now();
@@ -432,36 +433,14 @@ export default function SiaAgent() {
       setSiaState('thinking');
 
       try {
-        const res = await fetch('/api/sia/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: null, history: [] }),
-        });
-
-        const data = await res.json();
-
-        if (data.reply) {
-          const greeting: Message = { role: 'assistant', content: data.reply };
-          setMessages([greeting]);
-          messagesRef.current = [greeting];
-
-          if (data.extractedData) {
-            extractedDataRef.current = { ...extractedDataRef.current, ...data.extractedData };
-          }
-
-          await speak(data.reply);
-          startRecording();
-        }
+        const greetingMsg = "Hey there! I am Abinish's personal AI agent. What's your name?";
+        const greeting: Message = { role: 'assistant', content: greetingMsg };
+        setMessages([greeting]);
+        messagesRef.current = [greeting];
+        await speak(greetingMsg);
+        startRecording();
       } catch (error) {
         console.error('Greeting error:', error);
-        const fallback: Message = {
-          role: 'assistant',
-          content: "Hey there! Welcome to Abinish's portfolio! I'm Sia. What's your name?",
-        };
-        setMessages([fallback]);
-        messagesRef.current = [fallback];
-        await speak(fallback.content);
-        startRecording();
       }
     }
   };
