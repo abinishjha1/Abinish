@@ -23,10 +23,7 @@ interface ExtractedData {
   phase: string;
 }
 
-const isSpeechSynthesisSupported = () => {
-  if (typeof window === 'undefined') return false;
-  return !!window.speechSynthesis;
-};
+// Removed isSpeechSynthesisSupported
 
 export default function SiaAgent() {
   const [isVisible, setIsVisible] = useState(false);
@@ -96,50 +93,41 @@ export default function SiaAgent() {
     checkVisitor();
   }, []);
 
-  // ===== SPEECH SYNTHESIS (TTS) =====
-  const speak = useCallback((text: string): Promise<void> => {
-    return new Promise((resolve) => {
-      if (!isSpeechSynthesisSupported()) {
+  // ===== ELEVENLABS SPEECH SYNTHESIS (TTS) =====
+  const speak = useCallback(async (text: string): Promise<void> => {
+    return new Promise(async (resolve) => {
+      setSiaState('thinking');
+      try {
+        const res = await fetch('/api/sia/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+
+        if (!res.ok) throw new Error('TTS failed');
+
+        const blob = await res.blob();
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+
+        audio.onplay = () => setSiaState('speaking');
+        audio.onended = () => {
+          setSiaState('idle');
+          URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+        audio.onerror = () => {
+          setSiaState('idle');
+          URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+
+        await audio.play();
+      } catch (error) {
+        console.error('ElevenLabs TTS Error:', error);
+        setSiaState('idle');
         resolve();
-        return;
       }
-
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoices = [
-        'Samantha', 'Karen',
-        'Google UK English Female',
-        'Microsoft Zira',
-        'Google US English',
-      ];
-
-      let selectedVoice = voices.find((v) =>
-        preferredVoices.some((pv) =>
-          v.name.toLowerCase().includes(pv.toLowerCase())
-        )
-      );
-
-      if (!selectedVoice) {
-        selectedVoice = voices.find(
-          (v) =>
-            v.name.toLowerCase().includes('female') ||
-            v.name.toLowerCase().includes('woman')
-        );
-      }
-
-      if (selectedVoice) utterance.voice = selectedVoice;
-
-      utterance.rate = 1.0;
-      utterance.pitch = 1.1;
-      utterance.volume = 1.0;
-
-      utterance.onstart = () => setSiaState('speaking');
-      utterance.onend = () => { setSiaState('idle'); resolve(); };
-      utterance.onerror = () => { setSiaState('idle'); resolve(); };
-
-      window.speechSynthesis.speak(utterance);
     });
   }, []);
 
@@ -423,10 +411,7 @@ export default function SiaAgent() {
   const activateSia = async () => {
     setIsActivated(true);
 
-    if (isSpeechSynthesisSupported()) {
-      window.speechSynthesis.getVoices();
-      await new Promise((r) => setTimeout(r, 300));
-    }
+    // Removed TTS preloading
 
     if (!hasGreetedRef.current) {
       hasGreetedRef.current = true;
@@ -447,7 +432,8 @@ export default function SiaAgent() {
 
   // ===== DISMISS / SKIP =====
   const dismissSia = () => {
-    if (isSpeechSynthesisSupported()) window.speechSynthesis.cancel();
+    // Stop any playing audio if we had a global ref (for now, let it finish or we can just pause)
+    // if (audioRef.current) audioRef.current.pause();
     stopRecording();
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
