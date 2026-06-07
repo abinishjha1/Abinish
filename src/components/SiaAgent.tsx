@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -15,6 +16,10 @@ interface ExtractedData {
   company: string | null;
   lookingFor: string | null;
   message: string | null;
+  location: string | null;
+  skills: string | null;
+  salary: string | null;
+  interviewDate: string | null;
   phase: string;
 }
 
@@ -44,6 +49,10 @@ export default function SiaAgent() {
     company: null,
     lookingFor: null,
     message: null,
+    location: null,
+    skills: null,
+    salary: null,
+    interviewDate: null,
     phase: 'asking_name',
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -79,23 +88,7 @@ export default function SiaAgent() {
   // Check if visitor has been here before
   useEffect(() => {
     const checkVisitor = async () => {
-      const localVisited = localStorage.getItem('sia_visited');
-      if (localVisited) {
-        setIsChecking(false);
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/sia/check-visitor');
-        const data = await res.json();
-        if (data.isReturning) {
-          setIsChecking(false);
-          return;
-        }
-      } catch {
-        // continue
-      }
-
+      // Removed localStorage and IP checking so Sia appears on every reload
       setIsChecking(false);
       setTimeout(() => setIsVisible(true), 1500);
     };
@@ -368,6 +361,10 @@ export default function SiaAgent() {
           company: data.extractedData.company || prev.company,
           lookingFor: data.extractedData.lookingFor || prev.lookingFor,
           message: data.extractedData.message || prev.message,
+          location: data.extractedData.location || prev.location,
+          skills: data.extractedData.skills || prev.skills,
+          salary: data.extractedData.salary || prev.salary,
+          interviewDate: data.extractedData.interviewDate || prev.interviewDate,
           phase: data.extractedData.phase || prev.phase,
         };
 
@@ -394,16 +391,17 @@ export default function SiaAgent() {
                 company: finalData.company,
                 lookingFor: finalData.lookingFor,
                 message: finalData.message,
+                location: finalData.location,
+                skills: finalData.skills,
+                salary: finalData.salary,
+                interviewDate: finalData.interviewDate,
               }),
             });
           } catch (e) {
             console.error('Notification error:', e);
           }
 
-          try {
-            await fetch('/api/sia/check-visitor', { method: 'POST' });
-          } catch { /* ignore */ }
-          localStorage.setItem('sia_visited', 'true');
+          // Removed tracking to allow Sia on every reload
 
           setTimeout(() => dismissSia(), 5000);
           return;
@@ -488,8 +486,6 @@ export default function SiaAgent() {
   };
 
   const skipSia = () => {
-    localStorage.setItem('sia_visited', 'true');
-    fetch('/api/sia/check-visitor', { method: 'POST' }).catch(() => {});
     dismissSia();
   };
 

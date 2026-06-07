@@ -11,7 +11,7 @@ const WHATSAPP_RECIPIENT_NUMBER = process.env.WHATSAPP_RECIPIENT_NUMBER;
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, phone, type, company, lookingFor, message } = await request.json();
+    const { name, phone, type, company, lookingFor, message, location, skills, salary, interviewDate } = await request.json();
 
     if (!name) {
       return NextResponse.json(
@@ -38,6 +38,10 @@ export async function POST(request: NextRequest) {
           `🏢 *Type:* ${type || 'Not specified'}\n` +
           `🏛️ *Company:* ${company || 'Not specified'}\n` +
           `🔍 *Looking For:* ${lookingFor || 'Not specified'}\n` +
+          (location ? `📍 *Location:* ${location}\n` : '') +
+          (skills ? `💻 *Skills:* ${skills}\n` : '') +
+          (salary ? `💰 *Salary:* ${salary}\n` : '') +
+          (interviewDate ? `📅 *Interview:* ${interviewDate}\n` : '') +
           `💬 *Message:* ${message || 'No message'}\n\n` +
           `🕐 *Time:* ${timeStr}`;
 
@@ -89,6 +93,10 @@ export async function POST(request: NextRequest) {
       console.log(`🏢 Type: ${type || 'Not specified'}`);
       console.log(`🏛️  Company: ${company || 'Not specified'}`);
       console.log(`🔍 Looking For: ${lookingFor || 'Not specified'}`);
+      if (location) console.log(`📍 Location: ${location}`);
+      if (skills) console.log(`💻 Skills: ${skills}`);
+      if (salary) console.log(`💰 Salary: ${salary}`);
+      if (interviewDate) console.log(`📅 Interview: ${interviewDate}`);
       console.log(`💬 Message: ${message || 'No message'}`);
       console.log(`🕐 Time: ${timeStr}`);
       console.log('========================================');
@@ -142,6 +150,10 @@ export async function POST(request: NextRequest) {
           ${infoRow('🏢', 'Visitor Type', type, 'rgba(245,158,11,0.12)')}
           ${infoRow('🏛️', 'Company', company, 'rgba(236,72,153,0.12)')}
           ${infoRow('🔍', 'Looking For', lookingFor, 'rgba(6,182,212,0.12)')}
+          ${infoRow('📍', 'Location', location, 'rgba(239,68,68,0.12)')}
+          ${infoRow('💻', 'Skills', skills, 'rgba(59,130,246,0.12)')}
+          ${infoRow('💰', 'Salary', salary, 'rgba(16,185,129,0.12)')}
+          ${infoRow('📅', 'Interview Date', interviewDate, 'rgba(139,92,246,0.12)')}
           ${infoRow('💬', 'Message', message, 'rgba(168,85,247,0.12)')}
           
           <!-- Time -->
