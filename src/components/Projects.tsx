@@ -19,6 +19,26 @@ export default function Projects() {
 
   const projects = [
     {
+      title: "Autonomous Enterprise AI Agent",
+      desc: "Multi-agent system capable of automated research, data extraction, and intelligent workflow orchestration.",
+      tags: ["AI Agent", "Automation"],
+      tech: ["Python", "LangGraph", "OpenAI API"],
+      link: "https://github.com/abinishjha1/ai-agent-framework",
+      github: "https://github.com/abinishjha1/ai-agent-framework",
+      icon: "fas fa-network-wired",
+      gradient: "gradient-pink"
+    },
+    {
+      title: "Study At Home",
+      desc: "Comprehensive EdTech platform providing high-quality video lectures and online study materials.",
+      tags: ["EdTech", "E-Learning"],
+      tech: ["React", "Next.js", "Node.js"],
+      link: "https://www.studyathome.in/",
+      github: null,
+      icon: "fas fa-graduation-cap",
+      gradient: "gradient-blue"
+    },
+    {
       title: "Spy Chat Terminal",
       desc: "Secure real-time chat application.",
       tags: ["Real-time", "Security"],
