@@ -19,6 +19,16 @@ export default function Projects() {
 
   const projects = [
     {
+      title: "Solvix",
+      desc: "An intelligent, AI-powered problem-solving web application built with modern web technologies.",
+      tags: ["AI", "Web App"],
+      tech: ["Next.js", "AI", "Tailwind CSS"],
+      link: "https://solvix-delta.vercel.app",
+      github: null,
+      icon: "fas fa-bolt",
+      gradient: "gradient-pink"
+    },
+    {
       title: "Study At Home",
       desc: "Comprehensive EdTech platform providing high-quality video lectures and online study materials.",
       tags: ["EdTech", "E-Learning"],
