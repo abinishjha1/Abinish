@@ -4,6 +4,11 @@ import nodemailer from 'nodemailer';
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 
+// WhatsApp configuration
+const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
+const WHATSAPP_RECIPIENT_NUMBER = process.env.WHATSAPP_RECIPIENT_NUMBER;
+
 export async function POST(request: NextRequest) {
   try {
     const { name, phone, type, company, lookingFor, message } = await request.json();
@@ -22,6 +27,52 @@ export async function POST(request: NextRequest) {
       dateStyle: 'medium',
       timeStyle: 'short',
     });
+
+    // Send WhatsApp notification if configured
+    let whatsappSuccess = false;
+    if (WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_ID && WHATSAPP_RECIPIENT_NUMBER) {
+      try {
+        const whatsappMessage = `*New Visitor Alert 🤖*\n\n` +
+          `👤 *Name:* ${name}\n` +
+          `📞 *Phone:* ${phone || 'Not provided'}\n` +
+          `🏢 *Type:* ${type || 'Not specified'}\n` +
+          `🏛️ *Company:* ${company || 'Not specified'}\n` +
+          `🔍 *Looking For:* ${lookingFor || 'Not specified'}\n` +
+          `💬 *Message:* ${message || 'No message'}\n\n` +
+          `🕐 *Time:* ${timeStr}`;
+
+        const whatsappResponse = await fetch(
+          `https://graph.facebook.com/v19.0/${WHATSAPP_PHONE_ID}/messages`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messaging_product: 'whatsapp',
+              recipient_type: 'individual',
+              to: WHATSAPP_RECIPIENT_NUMBER,
+              type: 'text',
+              text: {
+                preview_url: false,
+                body: whatsappMessage,
+              },
+            }),
+          }
+        );
+
+        if (whatsappResponse.ok) {
+          console.log('📱 WhatsApp notification sent for visitor:', name);
+          whatsappSuccess = true;
+        } else {
+          const errorData = await whatsappResponse.text();
+          console.error('📱 WhatsApp API error:', errorData);
+        }
+      } catch (waError) {
+        console.error('📱 Error sending WhatsApp message:', waError);
+      }
+    }
 
     // Check if Gmail is configured
     const isConfigured =
@@ -44,8 +95,10 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        method: 'console',
-        message: 'Logged to console (Email not configured)',
+        method: whatsappSuccess ? 'whatsapp' : 'console',
+        message: whatsappSuccess 
+          ? 'WhatsApp message sent (Email not configured)' 
+          : 'Logged to console (Email & WhatsApp not configured)',
       });
     }
 
@@ -121,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      method: 'email',
+      method: whatsappSuccess ? 'email_and_whatsapp' : 'email',
     });
   } catch (error) {
     console.error('Notify API error:', error);
