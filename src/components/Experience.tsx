@@ -15,7 +15,7 @@ export default function Experience() {
               <div className="timeline-badge">Current</div>
               <h3>Senior Analyst (AI Developer)</h3>
               <span className="timeline-company">HCL Tech</span>
-              <span className="timeline-date">April 2024 - Present</span>
+              <span className="timeline-date">April 2026 - Present</span>
               <p>
                 Developing and deploying enterprise-grade AI solutions, focusing on Autonomous AI Agents and robust RAG (Retrieval-Augmented Generation) architectures to automate business workflows.
               </p>
@@ -23,6 +23,24 @@ export default function Experience() {
                 <span><i className="fas fa-check"></i> Autonomous AI Agents</span>
                 <span><i className="fas fa-check"></i> Enterprise RAG Systems</span>
                 <span><i className="fas fa-check"></i> LLM Orchestration</span>
+              </div>
+            </div>
+          </div>
+          <div className="timeline-item">
+            <div className="timeline-marker">
+              <i className="fas fa-laptop-code"></i>
+            </div>
+            <div className="timeline-content">
+              <h3>Independent Web & AI Developer</h3>
+              <span className="timeline-date">September 2024 - Present</span>
+              <p>
+                Building custom web applications, AI-powered solutions, and EdTech platforms for clients worldwide.
+                Specializing in modern tech stacks and delivering end-to-end solutions.
+              </p>
+              <div className="timeline-highlights">
+                <span><i className="fas fa-check"></i> RAG-based Q&A Systems</span>
+                <span><i className="fas fa-check"></i> Full Stack Applications</span>
+                <span><i className="fas fa-check"></i> EdTech Platforms</span>
               </div>
             </div>
           </div>
